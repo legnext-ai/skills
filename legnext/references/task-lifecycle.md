@@ -121,6 +121,8 @@ Pick one of A or B per job; both work. Polling is simplest for local/CLI/batch; 
 
 If your pipeline needs to upscale/variation a result later, do it within 3 days, and always persist the final image to your own bucket/disk.
 
+**Download gotcha (hard-won):** the CDN rejects requests with a `Python-urllib/*` User-Agent (403, bot mitigation). `curl`, `requests`, and browser-like UAs work. When downloading with Python's `urllib`, set an explicit `User-Agent` header (e.g. your app's name or `Mozilla/5.0`).
+
 ## Credits: freeze → consume → release
 
 - **Submit**: estimated cost is **frozen** (reserved) from your balance → `meta.usage.frozen`.

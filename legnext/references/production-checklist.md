@@ -24,6 +24,7 @@ Run through this before shipping a Legnext integration. Each item is a concrete,
 ## Fetching & storing
 - [ ] On `completed`, read `output.image_url` (primary) and `output.image_urls` (grid).
 - [ ] **Download images to permanent storage immediately** (your own bucket/disk) - CDN URLs expire in **30 days**.
+- [ ] Image download sets an explicit `User-Agent` - the CDN 403s `Python-urllib/*` (bot mitigation).
 - [ ] If upscaling/varying later, done within **3 days** of the parent job's creation.
 - [ ] `output.seed` persisted if reproducibility matters.
 
