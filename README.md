@@ -18,7 +18,7 @@ It teaches your agent the **integration methodology** for Legnext — not an API
 
 - Submitting `imagine`/`diffusion` tasks and reading the job object
 - Choosing **polling vs webhooks** and implementing either
-- Fetching and **persisting generated images** before they expire (30-day CDN TTL)
+- Fetching and **persisting generated images** before their temporary delivery URLs expire
 - Handling **credits** (freeze → consume → release) and `402` top-up flow
 - Submitting **child tasks** (`variation`/`upscale`/`reroll`/`remix`/…) on a parent image
 - **Content-moderation** and validation failures (user errors, not retries)

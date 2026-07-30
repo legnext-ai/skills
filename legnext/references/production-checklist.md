@@ -6,7 +6,8 @@ Run through this before shipping a Legnext integration. Each item is a concrete,
 - [ ] API key read from an environment variable (`LEGNEXT_API_KEY`), never hardcoded or committed.
 - [ ] `.gitignore` / secret scanner excludes the key. No key in code, logs, or error messages.
 - [ ] Base URL is configurable (default `https://api.legnext.ai`) so tests can point elsewhere.
-- [ ] `x-api-key` header sent on every request; `Content-Type: application/json` on POSTs.
+- [ ] `x-api-key` sent on submit/account requests; never sent or exposed from browser code.
+- [ ] Get Task capability URL kept server-side; no API key is required for it.
 - [ ] Using the correct environment's key (a key for one environment will not work against another).
 
 ## Submitting
@@ -17,9 +18,10 @@ Run through this before shipping a Legnext integration. Each item is a concrete,
 - [ ] `job_id` from the response persisted **before** considering the submit successful.
 
 ## Waiting
-- [ ] **Polling**: interval 5–10s; total timeout ~10–15 min; terminal states (`completed`/`failed`) break the loop; non-terminal `pending`/`staged`/`processing` keep polling.
+- [ ] **Polling**: bounded wait and non-zero interval; terminal states (`completed`/`failed`) break the loop; `pending`/`staged`/`processing`/`retry` keep polling.
 - [ ] **Webhook**: endpoint is public HTTPS; responds `2xx` fast; **dedupes by `job_id`**; fetches the canonical result via `GET /api/v1/job/{job_id}` rather than trusting the callback body alone.
-- [ ] One or the other per job (not both competing).
+- [ ] Polling remains a recovery path when callbacks are used.
+- [ ] Callback handler does not assume a public signing secret exists; validates shape and fetches Get Task.
 
 ## Fetching & storing
 - [ ] On `completed`, read `output.image_url` (primary) and `output.image_urls` (grid).
@@ -29,7 +31,7 @@ Run through this before shipping a Legnext integration. Each item is a concrete,
 - [ ] `output.seed` persisted if reproducibility matters.
 
 ## Child tasks
-- [ ] Read `output.available_actions` to decide valid actions + `imageNo` instead of hardcoding.
+- [ ] Read `output.available_actions` as guidance for actions + `imageNo`.
 - [ ] Child submitted with parent `job_id` + `imageNo` (0–3).
 - [ ] Handle *"re-generate the base image and retry"* / *"not supported for the selected image"* by regenerating the base image, not by looping.
 - [ ] `available_actions` treated as advisory (may over-advertise for edit-derived images); 4xx handled gracefully.
@@ -37,12 +39,11 @@ Run through this before shipping a Legnext integration. Each item is a concrete,
 ## Credits & billing
 - [ ] On `402`, surface a top-up prompt; check `GET /api/account/balance`; do not silently retry.
 - [ ] Read cost from `meta.usage.frozen`/`consume` in the response - no hardcoded price table.
-- [ ] Low-balance alerting wired (the account supports `low_balance_alert`).
 
 ## Errors & retries
 - [ ] Per-class handling implemented (see `errors.md`): auth, quota, rate, moderation, validation, action-not-supported, transient.
 - [ ] **Retriable only** `429`/`5xx`/network/timeout, with exponential backoff.
-- [ ] **Never retry** `400/401/402/403/413/422` or moderation/action errors unchanged.
+- [ ] **Never retry** `400/401/402/403` or moderation/action errors unchanged.
 - [ ] Retries are idempotent on your side (dedupe by `job_id`); a re-submit creates a new billed job.
 
 ## Observability
@@ -51,8 +52,8 @@ Run through this before shipping a Legnext integration. Each item is a concrete,
 - [ ] Outage heuristic: alert when failures spike across many unrelated jobs with empty/generic errors (likely transient upstream).
 
 ## Security
-- [ ] Webhook callback URL is HTTPS.
-- [ ] Inbound webhook handler does not trust the body for auth; it fetches the canonical job by `job_id` using the API key server-side.
+- [ ] Webhook callback URL is HTTPS and uses an unguessable path.
+- [ ] Inbound webhook handler does not trust the body as canonical; it fetches Get Task by `job_id`.
 - [ ] User-supplied prompts/URLs treated as untrusted data (no eval, no SSRF from `--sref`/`--oref`/`--cref` image URLs you fetch).
 
 ## Smoke test before go-live
