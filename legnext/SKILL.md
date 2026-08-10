@@ -26,6 +26,15 @@ Use `x-api-key: $LEGNEXT_API_KEY` on submit and account requests. `GET /api/v1/j
 ### Pin the model version explicitly
 A prompt with **no `--v` flag renders as v7** — the API default is v7, not Midjourney's newest web default. The API never injects `--v` for you. If the version matters, **always pin it** (`--v 8.2`, `--v 7`, …). See `references/parameters.md` for the full version × parameter matrix.
 
+### Writing effective prompts
+Prompt wording drives output quality more than any flag. Before composing prompts programmatically, read the two dedicated docs pages:
+- https://docs.legnext.ai/getting-started/prompting-basics — wording principles, the seven detail dimensions, and the three-part prompt structure (subject → scene/style → flags).
+- https://docs.legnext.ai/getting-started/prompting-advanced — multi-prompts and weights (v6 family only), permutations, negative prompting with `--no`, and rendering text in images.
+
+Stable rules worth keeping inline:
+- Prompts are plain English prose; concrete subjects, scenes, and lighting beat stacks of vague adjectives.
+- Midjourney flags (`--ar`, `--v`, `--no`, …) go at the **end of the prompt text**, not in JSON fields.
+
 ### Credits: freeze → consume → release
 - On submit, the estimated cost is **frozen** (reserved) from your balance (`meta.usage.frozen`).
 - On success, the actual cost is **consumed** (`meta.usage.consume`, usually equals frozen).
